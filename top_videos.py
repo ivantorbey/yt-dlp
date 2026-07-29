@@ -1,6 +1,8 @@
 import subprocess
 import json
 import sys
+import re
+import unicodedata
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -16,6 +18,14 @@ print_lock = threading.Lock()
 def safe_print(*args, **kwargs):
     with print_lock:
         print(*args, **kwargs)
+
+
+def sanitize(name):
+    name = unicodedata.normalize('NFD', name)
+    name = name.encode('ascii', 'ignore').decode('ascii')
+    name = re.sub(r'[\\/*?:"<>|]', '-', name)
+    name = re.sub(r'\s+', ' ', name).strip()
+    return name
 
 
 def get_channel_name(channel_url):
@@ -68,11 +78,11 @@ def get_all_videos(channel_url):
     return videos
 
 
-def download_one(video, output_dir):
+def download_one(video, rank, output_dir):
     vid = video["id"]
-    title = video["title"]
+    filename = f"{rank:02d} - {sanitize(video['title'])}"
 
-    safe_print(f"⬇️  Téléchargement : {title}")
+    safe_print(f"⬇️  Téléchargement : {filename}")
 
     try:
         subprocess.run(
@@ -81,21 +91,23 @@ def download_one(video, output_dir):
                 "-f", FORMAT,
                 "--merge-output-format", "mp4",
                 "--no-playlist",
-                "-o", f"{output_dir}/%(title)s.%(ext)s",
+                "-o", f"{output_dir}/{filename}.%(ext)s",
                 f"https://www.youtube.com/watch?v={vid}"
             ],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE
         )
-        safe_print(f"✅ Terminé : {title}")
+        safe_print(f"✅ Terminé : {filename}")
     except subprocess.CalledProcessError as e:
-        safe_print(f"❌ Échec pour '{title}' :\n{e.stderr.decode()}")
+        safe_print(f"❌ Échec pour '{filename}' :\n{e.stderr.decode()}")
 
 
 def download_videos(videos, output_dir):
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        executor.map(lambda v: download_one(v, output_dir), videos)
+        futures = [executor.submit(download_one, v, i + 1, output_dir) for i, v in enumerate(videos)]
+        for f in futures:
+            f.result()
 
 
 def main():

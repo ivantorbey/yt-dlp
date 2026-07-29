@@ -3,8 +3,18 @@
 import subprocess
 import json
 import sys
+import re
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
+def sanitize(name):
+    name = unicodedata.normalize('NFD', name)
+    name = name.encode('ascii', 'ignore').decode('ascii')
+    name = re.sub(r'[\\/*?:"<>|]', '-', name)
+    name = re.sub(r'\s+', ' ', name).strip()
+    return name
+
 
 def get_all_videos(channel_url):
     cmd = [
@@ -43,18 +53,18 @@ def get_all_videos(channel_url):
     return videos
 
 
-def download_one(video_id: str, output_dir: str = "."):
-    """Fonction appelée en parallèle pour chaque vidéo"""
+def download_one(video: dict, rank: int, output_dir: str = "."):
+    filename = f"{rank:02d} - {sanitize(video['title'])}"
     cmd = [
         "yt-dlp",
-        "-q",                        # vraiment silencieux
+        "-q",
         "--no-warnings",
         "-f", "bestaudio[ext=m4a]/bestaudio",
-        "--audio-quality", "5",      # 5 ≈ ~128-160kbps, bon compromis
+        "--audio-quality", "5",
         "--embed-thumbnail",
         "--add-metadata",
-        "-o", f"{output_dir}/%(title)s.%(ext)s",
-        f"https://www.youtube.com/watch?v={video_id}"
+        "-o", f"{output_dir}/{filename}.%(ext)s",
+        f"https://www.youtube.com/watch?v={video['id']}"
     ]
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -102,13 +112,13 @@ def main():
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = [
-            executor.submit(download_one, video["id"], output_dir)
-            for video in top_videos
+            executor.submit(download_one, video, i + 1, output_dir)
+            for i, video in enumerate(top_videos)
         ]
 
         for i, future in enumerate(as_completed(futures), 1):
             try:
-                future.result()  # lève l'exception s'il y en a eu une
+                future.result()
                 print(f"  {i:2d}/{len(top_videos)} terminé", end="\r")
             except Exception as e:
                 print(f"\nErreur sur une vidéo : {e}")
