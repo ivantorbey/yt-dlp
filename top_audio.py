@@ -16,6 +16,23 @@ def sanitize(name):
     return name
 
 
+def get_channel_name(channel_url):
+    cmd = [
+        "yt-dlp",
+        "--flat-playlist",
+        "--dump-single-json",
+        "--playlist-items", "1",
+        channel_url
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        name = data.get("uploader") or data.get("channel") or data.get("title") or "unknown"
+        return "".join(c for c in name if c.isalnum() or c in " _-").strip()
+    except Exception:
+        return Path(channel_url).name
+
+
 def get_all_videos(channel_url):
     cmd = [
         "yt-dlp",
@@ -103,7 +120,7 @@ def main():
     print(f"\n🚀 Téléchargement parallèle de {len(top_videos)} meilleurs audios...")
 
     # Dossier de sortie (optionnel)
-    output_dir = f"/Users/ivantorbey/audio_video/top_audio/{Path(channel_url).name}"
+    output_dir = f"/Users/ivantorbey/audio_video/top_audio/{get_channel_name(channel_url)}"
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Nombre de téléchargements simultanés
