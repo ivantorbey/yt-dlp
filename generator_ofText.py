@@ -29,7 +29,7 @@ video_channel = [
 
 today = datetime.date.today()
 formatted_date = today.strftime('%Y%m%d')
-new_folder   = f"/Users/ivantorbey/Desktop/a_faire/{formatted_date}"
+new_folder   = f"/Users/ivantorbey/audio_video/{formatted_date}"
 audio_folder = f"{new_folder}/audio"
 video_folder = f"{new_folder}/video"
 

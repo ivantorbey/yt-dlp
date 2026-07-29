@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 # -------- CONFIG --------
 MAX_WORKERS = 3
 FORMAT = "best[height<=720][ext=mp4]/best[ext=mp4]"
-BASE_OUTPUT_DIR = "./top_video"
+BASE_OUTPUT_DIR = "/Users/ivantorbey/audio_video/top_video"
 # ------------------------
 
 print_lock = threading.Lock()

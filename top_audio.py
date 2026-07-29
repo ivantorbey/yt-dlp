@@ -103,8 +103,8 @@ def main():
     print(f"\n🚀 Téléchargement parallèle de {len(top_videos)} meilleurs audios...")
 
     # Dossier de sortie (optionnel)
-    output_dir = f"Top_{top_x}_audios_{Path(channel_url).name}"
-    Path(output_dir).mkdir(exist_ok=True)
+    output_dir = f"/Users/ivantorbey/audio_video/top_audio/{Path(channel_url).name}"
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Nombre de téléchargements simultanés
     # 4-6 souvent le meilleur compromis (selon ta connexion)
