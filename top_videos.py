@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 # -------- CONFIG --------
 MAX_WORKERS = 3
 FORMAT = "best[height<=720][ext=mp4]/best[ext=mp4]"
-BASE_OUTPUT_DIR = "./downloads"
+BASE_OUTPUT_DIR = "./top_video"
 # ------------------------
 
 print_lock = threading.Lock()
@@ -22,15 +22,14 @@ def get_channel_name(channel_url):
     cmd = [
         "yt-dlp",
         "--flat-playlist",
-        "--dump-json",
+        "--dump-single-json",
         "--playlist-items", "1",
         channel_url
     ]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        data = json.loads(result.stdout.splitlines()[0])
-        name = data.get("channel") or data.get("uploader") or "unknown_channel"
-        # Nettoie les caractères invalides pour un nom de dossier
+        data = json.loads(result.stdout)
+        name = data.get("uploader") or data.get("channel") or data.get("title") or "unknown_channel"
         return "".join(c for c in name if c.isalnum() or c in " _-").strip()
     except Exception:
         return "unknown_channel"
