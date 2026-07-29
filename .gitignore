@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Downloads
+downloads/
+Top_*/
+*.sh
+
+# macOS
+.DS_Store
