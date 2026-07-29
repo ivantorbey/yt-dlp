@@ -8,5 +8,8 @@ downloads/
 Top_*/
 *.sh
 
+# Claude Code
+.claude/
+
 # macOS
 .DS_Store
