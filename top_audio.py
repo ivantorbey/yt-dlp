@@ -19,6 +19,7 @@ def sanitize(name):
 def get_channel_name(channel_url):
     cmd = [
         "yt-dlp",
+        "--cookies-from-browser", "chrome",
         "--flat-playlist",
         "--dump-single-json",
         "--playlist-items", "1",
@@ -36,6 +37,7 @@ def get_channel_name(channel_url):
 def get_all_videos(channel_url):
     cmd = [
         "yt-dlp",
+        "--cookies-from-browser", "chrome",
         "--flat-playlist",
         "--dump-single-json",     # ← plus rapide que --dump-json + parsing ligne par ligne
         "--no-warnings",
@@ -74,6 +76,7 @@ def download_one(video: dict, rank: int, output_dir: str = "."):
     filename = f"{rank:02d} - {sanitize(video['title'])}"
     cmd = [
         "yt-dlp",
+        "--cookies-from-browser", "chrome",
         "-q",
         "--no-warnings",
         "-f", "bestaudio[ext=m4a]/bestaudio",
@@ -120,7 +123,8 @@ def main():
     print(f"\n🚀 Téléchargement parallèle de {len(top_videos)} meilleurs audios...")
 
     # Dossier de sortie (optionnel)
-    output_dir = f"/Users/ivantorbey/audio_video/top_audio/{get_channel_name(channel_url)}"
+    content_type = "shorts" if "/shorts" in channel_url else "videos"
+    output_dir = f"/Users/ivantorbey/audio_video/top_audio/{get_channel_name(channel_url)}_{content_type}"
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Nombre de téléchargements simultanés

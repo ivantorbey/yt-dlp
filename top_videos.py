@@ -31,6 +31,7 @@ def sanitize(name):
 def get_channel_name(channel_url):
     cmd = [
         "yt-dlp",
+        "--cookies-from-browser", "chrome",
         "--flat-playlist",
         "--dump-single-json",
         "--playlist-items", "1",
@@ -48,6 +49,7 @@ def get_channel_name(channel_url):
 def get_all_videos(channel_url):
     cmd = [
         "yt-dlp",
+        "--cookies-from-browser", "chrome",
         "--flat-playlist",
         "--dump-json",
         channel_url
@@ -88,6 +90,7 @@ def download_one(video, rank, output_dir):
         subprocess.run(
             [
                 "yt-dlp",
+                "--cookies-from-browser", "chrome",
                 "-f", FORMAT,
                 "--merge-output-format", "mp4",
                 "--no-playlist",
@@ -127,7 +130,8 @@ def main():
 
     print("📥 Analyse de la chaîne…")
     channel_name = get_channel_name(channel_url)
-    output_dir = f"{BASE_OUTPUT_DIR}/{channel_name}"
+    content_type = "shorts" if "/shorts" in channel_url else "videos"
+    output_dir = f"{BASE_OUTPUT_DIR}/{channel_name}_{content_type}"
     videos = get_all_videos(channel_url)
 
     if not videos:
